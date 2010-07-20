@@ -1,12 +1,15 @@
 package Music::Tag::MusicBrainz;
-our $VERSION = 0.30;
+our $VERSION = 0.31;
 
 # Copyright (c) 2006 Edward Allen III. Some rights reserved.
+
 #
-## This program is free software; you can redistribute it and/or
-## modify it under the terms of the Artistic License, distributed
-## with Perl.
+# You may distribute under the terms of either the GNU General Public
+# License or the Artistic License, as specified in the README file.
 #
+
+
+
 
 =pod
 
@@ -27,9 +30,11 @@ Music::Tag::MusicBrainz - Plugin module for Music::Tag to get information from M
 
 =head1 DESCRIPTION
 
-Music::Tag::MusicBrainz is normally created in Music::Tag. This plugin gathers additional information about a track from amazon, and updates the tag object.
+This plugin gathers additional information about a track from L<www.musicbrianz.org>, and updates the Music::Tag object.
 
-=head1 REQUIRED VALUES
+Music::Tag::MusicBrainz objects must be created by Music::Tag.
+
+=head1 REQUIRED DATA VALUES
 
 =over 4
 
@@ -37,7 +42,7 @@ Music::Tag::MusicBrainz is normally created in Music::Tag. This plugin gathers a
 
 =back
 
-=head1 USED VALUES
+=head1 USED DATA VALUES
 
 =over 4
 
@@ -63,7 +68,7 @@ tracknum is used only if title is not true, or if trust_track option is set.
 
 =back
 
-=head1 SET VALUES
+=head1 SET DATA VALUES
 
 =over 4
 
@@ -87,6 +92,7 @@ use warnings;
 use WebService::MusicBrainz::Artist;
 use WebService::MusicBrainz::Release;
 use WebService::MusicBrainz::Track;
+use Cache::FileCache;
 use utf8;
 our @ISA = qw(Music::Tag::Generic);
 
@@ -113,7 +119,7 @@ sub default_options {
 
 =item get_tag
 
-Updates current tag object with information from MusicBrainz database.
+Updates current Music::Tag object with information from MusicBrainz database.
 
 Same as $mbplugin->artist_info() && $mbplugin->album_info() && $mbplugin->track_info();
 
@@ -133,7 +139,7 @@ sub get_tag {
 
 =item artist_info
 
-Update the tag object with information about the artist from MusicBrainz.
+Update the Music::Tag object with information about the artist from MusicBrainz.
 
 =cut
 
@@ -141,7 +147,7 @@ sub artist_info {
     my $self = shift;
     $self->status( "Looking up artist from " . $self->options->{mb_host} );
     unless ( exists $self->{mb_a} ) {
-        $self->{mb_a} = WebService::MusicBrainz::Artist->new( HOST => $self->options->{mb_host} );
+        $self->{mb_a} = WebService::MusicBrainz::Artist->new( HOST => $self->options->{mb_host}, CACHE => $self->mb_cache );
     }
     my $params   = {};
     my $maxscore = 0;
@@ -242,7 +248,7 @@ sub artist_info {
 
 =item album_info
 
-Update the tag object with information about the album from MusicBrainz.
+Update the Music::Tag object with information about the album from MusicBrainz.
 
 =cut
 
@@ -251,13 +257,16 @@ sub album_info {
     my $self = shift;
     $self->status( "Looking up album from " . $self->options->{mb_host} );
     unless ( exists $self->{mb_r} ) {
-        $self->{mb_r} = WebService::MusicBrainz::Release->new( HOST => $self->options->{mb_host} );
+        $self->{mb_r} = WebService::MusicBrainz::Release->new( HOST => $self->options->{mb_host}, CACHE => $self->mb_cache );
     }
     my $params = { LIMIT => 200 };
     my $release = undef;
     if (    ( defined $self->info->mb_albumid )
          && ( $self->info->mb_albumid )
-         && ( not $self->info->options->{ignore_mbid} ) ) {
+         && ( not $self->info->options->{ignore_mbid} ) 
+         && ( length($self->info->mb_albumid) > 30)
+         
+         ) {
         $params->{MBID} = $self->info->mb_albumid;
         my $response = $self->{mb_r}->search($params);
         $release = $response->release();
@@ -324,7 +333,7 @@ sub album_info {
                  and ( ( $self->info->totaltracks ) == ( $_->track_list->{count} ) ) ) {
                 $s += 16;
             }
-			if (     ( defined $self->info->disc)
+			if (     ( defined $self->info->disc) and (defined $disc)
 				  and ( ( $self->info->disc) == ( $disc) ) ) {
 				  $s += 8;
 			 }
@@ -408,7 +417,7 @@ sub album_info {
 
 =item track_info
 
-Update the tag object with information about the track from MusicBrainz.
+Update the Music::Tag object with information about the track from MusicBrainz.
 
 =cut
 
@@ -423,11 +432,11 @@ sub track_info {
     }
     $self->status( "Looking up track from " . $self->options->{mb_host} );
     unless ( exists $self->{mb_r} ) {
-        $self->{mb_r} = WebService::MusicBrainz::Release->new( HOST => $self->options->{mb_host} );
+        $self->{mb_r} = WebService::MusicBrainz::Release->new( HOST => $self->options->{mb_host}, CACHE => $self->mb_cache );
     }
     return unless ( defined $self->info->mb_albumid );
     my $params = { MBID => $self->info->mb_albumid,
-                   INC  => "tracks+puids+discs+release-events",
+                   INC  => "tracks discs release-events",
                  };
     my $response = $self->{mb_r}->search($params);
     unless ( $response->release->track_list ) {
@@ -484,7 +493,7 @@ sub track_info {
                 $s += 4;
             }
         }
-        if ( defined $self->info->duration ) {
+        if ((defined $self->info->duration) && (exists $t->{duration}) && (defined $t->{duration})) {
             my $diff = abs( $self->info->duration - $t->{duration} );
             if ( $diff < 3000 ) {
                 if ( $self->options->{trust_time} ) {
@@ -593,6 +602,34 @@ sub track_info {
     }
 }
 
+=item B<mb_cache>
+
+Returns and optionally sets a reference to the Cache::FileCache object used to cache requests.
+
+=cut
+
+sub mb_cache {
+    my $self = shift;
+	my $new = shift;
+	if ($new) {
+		$self->{mb_cache} = $new;
+	}
+    unless ( ( exists $self->{mb_cache} ) && ( $self->{mb_cache} ) ) {
+        if ( $self->options->{mb_cache} ) {
+            $self->{mb_cache} = $self->options->{mb_cache};
+        }
+        else {
+            $self->{mb_cache} =
+              Cache::FileCache->new(
+                                     { namespace          => "mb_cache",
+                                       default_expires_in => 60000,
+                                     }
+                                   );
+        }
+    }
+    return $self->{mb_cache};
+}
+
 =item default_options
 
 Returns hash of default options for plugin
@@ -653,14 +690,9 @@ Set to host for musicbrainz.  Default is www.musicbrainz.org.
 
 Sometimes will grab incorrect info. This is due to the lack of album level view when repairing tags.
 
-=head1 SEE ALSO INCLUDED
-
-L<Music::Tag>, L<Music::Tag::Amazon>, L<Music::Tag::File>, L<Music::Tag::FLAC>, L<Music::Tag::Lyrics>,
-L<Music::Tag::M4A>, L<Music::Tag::MP3>, L<Music::Tag::OGG>, L<Music::Tag::Option>
-
 =head1 SEE ALSO
 
-L<WebService::MusicBrainz>
+L<WebService::MusicBrainz>, L<Music::Tag>, L<www.musicbrianz.org>
 
 
 =head1 AUTHOR 
@@ -670,11 +702,33 @@ Edward Allen III <ealleniii _at_ cpan _dot_ org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2007 Edward Allen III. Some rights reserved.
+Copyright (c) 2007,2008 Edward Allen III. Some rights reserved.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the Artistic License, distributed
-with Perl.
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either:
+
+a) the GNU General Public License as published by the Free
+Software Foundation; either version 1, or (at your option) any
+later version, or
+
+b) the "Artistic License" which comes with Perl.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See either
+the GNU General Public License or the Artistic License for more details.
+
+You should have received a copy of the Artistic License with this
+Kit, in the file named "Artistic".  If not, I'll be glad to provide one.
+
+You should also have received a copy of the GNU General Public License
+along with this program in the file named "Copying". If not, write to the
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA or visit their web page on the Internet at
+http://www.gnu.org/copyleft/gpl.html.
+
 
 
 =cut

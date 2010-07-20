@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Music-Tag-MusicBrainz
-version:             0.3
+version:             0.31
 abstract:            Plugin module for Music::Tag to get information from MusicBrainz database.
 license:             perl
 author:              
