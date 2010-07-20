@@ -6,4 +6,5 @@ README
 t/1-musicbranz.t
 t/2-pod.t
 t/3-pod-coverage.t
+eg/printinfo.pl
 META.yml                                 Module meta-data (added by MakeMaker)

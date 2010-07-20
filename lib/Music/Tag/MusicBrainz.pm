@@ -1,5 +1,5 @@
 package Music::Tag::MusicBrainz;
-our $VERSION = 0.29;
+our $VERSION = 0.30;
 
 # Copyright (c) 2006 Edward Allen III. Some rights reserved.
 #
@@ -83,6 +83,7 @@ track is set only if track is not true or trust_title is true.
 =cut
 
 use strict;
+use warnings;
 use WebService::MusicBrainz::Artist;
 use WebService::MusicBrainz::Release;
 use WebService::MusicBrainz::Track;

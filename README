@@ -1,5 +1,5 @@
-Music::Tag::MusicBrainz version 0.29
-======================================
+Music::Tag::MusicBrainz version 
+===============================
 
 Music::Tag::MusicBrainz is a plugin for Music::Tag which gets info from 
 MusicBrainz site. Uses WebService::MusicBrainz.

@@ -1,3 +1,7 @@
+Release Name: 0.30
+============================
+* Fixed prereq for Music::Tag
+
 Release Name: 0.29
 ============================
 * Kwalitee / pod imporvments
