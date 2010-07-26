@@ -1,7 +1,9 @@
 package Music::Tag::MusicBrainz;
+use strict;
+use warnings;
 our $VERSION = 0.31;
 
-# Copyright (c) 2006 Edward Allen III. Some rights reserved.
+# Copyright (c) 2006,2010 Edward Allen III. Some rights reserved.
 
 #
 # You may distribute under the terms of either the GNU General Public
@@ -11,8 +13,6 @@ our $VERSION = 0.31;
 
 
 
-use strict;
-use warnings;
 use WebService::MusicBrainz::Artist;
 use WebService::MusicBrainz::Release;
 use WebService::MusicBrainz::Track;
@@ -689,7 +689,7 @@ L<WebService::MusicBrainz>, L<Music::Tag>, L<www.musicbrianz.org>
 
 Source is available at github: L<http://github.com/riemann42/Music-Tag-MusicBrainz|http://github.com/riemann42/Music-Tag-MusicBrainz>.
 
-=head1 BUGTRACKING
+=head1 BUG TRACKING
 
 Please use github for bug tracking: L<http://github.com/riemann42/Music-Tag-MusicBrainz/issues|http://github.com/riemann42/Music-Tag-MusicBrainz/issues>.
 
