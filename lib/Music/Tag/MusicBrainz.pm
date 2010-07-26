@@ -11,82 +11,6 @@ our $VERSION = 0.31;
 
 
 
-=pod
-
-=head1 NAME
-
-Music::Tag::MusicBrainz - Plugin module for Music::Tag to get information from MusicBrainz database.
-
-=head1 SYNOPSIS
-
-	use Music::Tag
-
-	my $info = Music::Tag->new($filename);
-   
-	my $plugin = $info->add_plugin("MusicBrainz");
-	$plugin->get_tag;
-
-	print "Music Tag Track ID ", $info->mb_trackid();
-
-=head1 DESCRIPTION
-
-This plugin gathers additional information about a track from L<www.musicbrianz.org>, and updates the Music::Tag object.
-
-Music::Tag::MusicBrainz objects must be created by Music::Tag.
-
-=head1 REQUIRED DATA VALUES
-
-=over 4
-
-=item artist
-
-=back
-
-=head1 USED DATA VALUES
-
-=over 4
-
-=item album
-
-This is used to filter results. 
-
-=item releasedate
-
-This is used to filter results. 
-
-=item totaltracks
-
-This is used to filter results. 
-
-=item title
-
-title is used only if track is not true, or if trust_title option is set.
-
-=item tracknum
-
-tracknum is used only if title is not true, or if trust_track option is set.
-
-=back
-
-=head1 SET DATA VALUES
-
-=over 4
-
-=item album
-
-=item title
-
-title is set only if trust_track is true.
-
-=item track
-
-track is set only if track is not true or trust_title is true.
-
-=item releasedate
-
-
-=cut
-
 use strict;
 use warnings;
 use WebService::MusicBrainz::Artist;
@@ -94,7 +18,7 @@ use WebService::MusicBrainz::Release;
 use WebService::MusicBrainz::Track;
 use Cache::FileCache;
 use utf8;
-our @ISA = qw(Music::Tag::Generic);
+use base qw(Music::Tag::Generic);
 
 sub default_options {
     {  prefered_country         => "US",
@@ -111,20 +35,6 @@ sub default_options {
     };
 }
 
-=back
-
-=head1 METHODS
-
-=over 4
-
-=item get_tag
-
-Updates current Music::Tag object with information from MusicBrainz database.
-
-Same as $mbplugin->artist_info() && $mbplugin->album_info() && $mbplugin->track_info();
-
-=cut
-
 sub get_tag {
     my $self = shift;
     if ( ( $self->options->{skip_seen} ) && ( length( $self->info->mb_trackid ) == 36 ) ) {
@@ -136,12 +46,6 @@ sub get_tag {
     }
     return $self;
 }
-
-=item artist_info
-
-Update the Music::Tag object with information about the artist from MusicBrainz.
-
-=cut
 
 sub artist_info {
     my $self = shift;
@@ -245,12 +149,6 @@ sub artist_info {
     }
     return $self->info;
 }
-
-=item album_info
-
-Update the Music::Tag object with information about the album from MusicBrainz.
-
-=cut
 
 
 sub album_info {
@@ -414,12 +312,6 @@ sub album_info {
     }
     return $self->info;
 }
-
-=item track_info
-
-Update the Music::Tag object with information about the track from MusicBrainz.
-
-=cut
 
 
 sub track_info {
@@ -602,12 +494,6 @@ sub track_info {
     }
 }
 
-=item B<mb_cache>
-
-Returns and optionally sets a reference to the Cache::FileCache object used to cache requests.
-
-=cut
-
 sub mb_cache {
     my $self = shift;
 	my $new = shift;
@@ -629,6 +515,111 @@ sub mb_cache {
     }
     return $self->{mb_cache};
 }
+
+
+1;
+__END__
+=pod
+
+=head1 NAME
+
+Music::Tag::MusicBrainz - Plugin module for Music::Tag to get information from MusicBrainz database.
+
+=head1 SYNOPSIS
+
+	use Music::Tag
+
+	my $info = Music::Tag->new($filename);
+   
+	my $plugin = $info->add_plugin("MusicBrainz");
+	$plugin->get_tag;
+
+	print "Music Tag Track ID ", $info->mb_trackid();
+
+=head1 DESCRIPTION
+
+This plugin gathers additional information about a track from L<www.musicbrianz.org>, and updates the Music::Tag object.
+
+Music::Tag::MusicBrainz objects must be created by Music::Tag.
+
+=head1 REQUIRED DATA VALUES
+
+=over 4
+
+=item artist
+
+=back
+
+=head1 USED DATA VALUES
+
+=over 4
+
+=item album
+
+This is used to filter results. 
+
+=item releasedate
+
+This is used to filter results. 
+
+=item totaltracks
+
+This is used to filter results. 
+
+=item title
+
+title is used only if track is not true, or if trust_title option is set.
+
+=item tracknum
+
+tracknum is used only if title is not true, or if trust_track option is set.
+
+=back
+
+=head1 SET DATA VALUES
+
+=over 4
+
+=item album
+
+=item title
+
+title is set only if trust_track is true.
+
+=item track
+
+track is set only if track is not true or trust_title is true.
+
+=item releasedate
+
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item get_tag
+
+Updates current Music::Tag object with information from MusicBrainz database.
+
+Same as $mbplugin->artist_info() && $mbplugin->album_info() && $mbplugin->track_info();
+
+=item artist_info
+
+Update the Music::Tag object with information about the artist from MusicBrainz.
+
+=item album_info
+
+Update the Music::Tag object with information about the album from MusicBrainz.
+
+=item track_info
+
+Update the Music::Tag object with information about the track from MusicBrainz.
+
+=item B<mb_cache>
+
+Returns and optionally sets a reference to the Cache::FileCache object used to cache requests.
 
 =item default_options
 
@@ -694,6 +685,13 @@ Sometimes will grab incorrect info. This is due to the lack of album level view 
 
 L<WebService::MusicBrainz>, L<Music::Tag>, L<www.musicbrianz.org>
 
+=head1 SOURCE
+
+Source is available at github: L<http://github.com/riemann42/Music-Tag-MusicBrainz|http://github.com/riemann42/Music-Tag-MusicBrainz>.
+
+=head1 BUGTRACKING
+
+Please use github for bug tracking: L<http://github.com/riemann42/Music-Tag-MusicBrainz/issues|http://github.com/riemann42/Music-Tag-MusicBrainz/issues>.
 
 =head1 AUTHOR 
 
@@ -731,7 +729,3 @@ http://www.gnu.org/copyleft/gpl.html.
 
 
 
-=cut
-
-
-1;
