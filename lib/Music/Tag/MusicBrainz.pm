@@ -1,7 +1,7 @@
 package Music::Tag::MusicBrainz;
 use strict;
 use warnings;
-our $VERSION = 0.31;
+our $VERSION = .40_01;
 
 # Copyright (c) 2006,2010 Edward Allen III. Some rights reserved.
 
