@@ -35,6 +35,14 @@ sub default_options {
     };
 }
 
+sub required_values {
+	return qw( artist)
+}
+
+sub set_values {
+	return qw( album releasedate totaltracks title tracknum title track releasedate) 
+}
+
 sub get_tag {
     my $self = shift;
     if ( ( $self->options->{skip_seen} ) && ( length( $self->info->mb_trackid ) == 36 ) ) {
@@ -592,38 +600,45 @@ track is set only if track is not true or trust_title is true.
 
 =item releasedate
 
-
 =back
 
 =head1 METHODS
 
 =over 4
 
-=item get_tag
+=item B<get_tag()>
 
 Updates current Music::Tag object with information from MusicBrainz database.
 
 Same as $mbplugin->artist_info() && $mbplugin->album_info() && $mbplugin->track_info();
 
-=item artist_info
+=item B<artist_info()>
 
 Update the Music::Tag object with information about the artist from MusicBrainz.
 
-=item album_info
+=item B<album_info()>
 
 Update the Music::Tag object with information about the album from MusicBrainz.
 
-=item track_info
+=item B<track_info()>
 
 Update the Music::Tag object with information about the track from MusicBrainz.
 
-=item B<mb_cache>
+=item B<mb_cache()>
 
 Returns and optionally sets a reference to the Cache::FileCache object used to cache requests.
 
-=item default_options
+=item B<default_options()>
 
 Returns hash of default options for plugin
+
+=item B<required_values()>
+
+A list of required values required for get_tag() to work.
+
+=item B<set_values()>
+
+A list of values that can be set by this module.
 
 =back
 
