@@ -1,0 +1,21 @@
+CHANGES
+	Release Name: 0.40_01
+		*	Started using git and github
+
+		*	Normalized version accross plugins.
+
+		*	POD Changes
+
+		*	Revised Testing
+
+		*	Added cabability methods.
+
+	Release Name: 0.30
+		* 	Fixed prereq for Music::Tag
+
+	Release Name: 0.29
+		* 	Kwalitee / pod imporvments
+
+	Release Name: 0.28
+		* 	Split from Music::Tag
+
