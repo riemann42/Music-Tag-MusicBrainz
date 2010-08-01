@@ -6,6 +6,8 @@ WriteMakefile( NAME         => "Music::Tag::MusicBrainz",
 			   LICENSE		=> 'perl',
                PREREQ_PM => { 'Music::Tag'     => .40_01,
                               'WebService::MusicBrainz' => 0.07,
+                              'Text::Levenshtein' => 0,
+                              
                             },
              );
 
