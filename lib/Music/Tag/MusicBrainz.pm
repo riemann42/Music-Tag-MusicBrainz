@@ -1,6 +1,6 @@
 package Music::Tag::MusicBrainz;
 use strict; use warnings; use utf8;
-our $VERSION = '.4101';
+our $VERSION = '0.4101';
 
 # Copyright © 2006,2010 Edward Allen III. Some rights reserved.
 #
